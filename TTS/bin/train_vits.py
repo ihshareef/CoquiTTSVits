@@ -26,6 +26,7 @@ audio_config = VitsAudioConfig(
 
 config = VitsConfig(
     audio=audio_config,
+    add_blank=False,
     run_name="vits_ljspeech",
     batch_size=32,
     eval_batch_size=16,
