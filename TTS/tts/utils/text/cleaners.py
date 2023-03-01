@@ -2,6 +2,10 @@
 # TODO: pick the cleaner for languages dynamically
 
 import re
+from .dhivehi.helpers import clean_numbers, \
+    expand_rufiyaa, remove_dhivehi_suffixes, convert_dv_to_ascii,\
+        expand_ar_graphemes, expand_dv_abbreviations
+from .dhivehi.numbers_to_thaana_transliterator import NumbersToThaanaTransliterator
 
 from anyascii import anyascii
 
@@ -161,5 +165,19 @@ def multilingual_cleaners(text):
     text = lowercase(text)
     text = replace_symbols(text, lang=None)
     text = remove_aux_symbols(text)
+    text = collapse_whitespace(text)
+    return text
+
+def dhivehi_cleaners(text):
+    # numbers transliterator
+    transliterator = NumbersToThaanaTransliterator()
+    text = expand_rufiyaa(text)
+    text = clean_numbers(text)
+    text = transliterator.transliterate_text(text)
+    text = remove_dhivehi_suffixes(text)
+    text = expand_dv_abbreviations(text)
+    text = expand_ar_graphemes(text)
+    text = convert_dv_to_ascii(text)
+    text = lowercase(text)
     text = collapse_whitespace(text)
     return text
