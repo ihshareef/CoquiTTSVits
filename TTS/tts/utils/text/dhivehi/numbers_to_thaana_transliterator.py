@@ -1,4 +1,5 @@
 from typing import List
+import re
 
 
 def _multiple_explode(delimiters, string):
@@ -105,18 +106,43 @@ class NumbersToThaanaTransliterator:
 
     def __init__(self):
         pass
+    
+    def _is_numeric(self, word) -> bool: 
+        numeric_match = re.compile("\d+(,\d+)?")
+        return True if numeric_match.search(word) else False
+    
+    def _remove_commas(self, word:str) -> str:
+        return re.sub(r",", r"", word)
+    
+    def _remove_number_commas_across_text(self, text) -> str:
+        words = text.split()
+        for idx, word in enumerate(words):
+            if self._is_numeric(word):
+                print(word)
+                words[idx] = self._remove_commas(str(word))
+            else: 
+                words[idx] = word
+        return " ".join(words)
+    
+    def _add_spaces_to_alphabet_adjacent_numbers(self, text) -> str: 
+        return re.sub('(\d+(\.\d+)?)', r' \1 ', text)
 
     def transliterate_text(self, text: str) -> str: 
+        
+        text = self._remove_number_commas_across_text(text)
+        text = self._add_spaces_to_alphabet_adjacent_numbers(text)
+        
         words = text.split()
         for idx, word in enumerate(words): 
-            if word.isnumeric():
+            if self._is_numeric(word):
+                # is numeric
                 words[idx] = self.transliterate(word)
         return " ".join(words)
 
     def transliterate(self, number: str) -> str:
         number_array = self.convert_number_array_to_language(sub_divide_numbers_into_places(number))
         return ' '.join(number_array)
-
+    
 
     def pre_process_tens(self, number: str, mode: str = 'mid') -> str:
         result = []
