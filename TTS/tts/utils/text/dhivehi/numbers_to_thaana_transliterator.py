@@ -118,7 +118,6 @@ class NumbersToThaanaTransliterator:
         words = text.split()
         for idx, word in enumerate(words):
             if self._is_numeric(word):
-                print(word)
                 words[idx] = self._remove_commas(str(word))
             else: 
                 words[idx] = word
