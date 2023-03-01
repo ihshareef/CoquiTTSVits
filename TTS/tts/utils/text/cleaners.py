@@ -1,30 +1,132 @@
-"""Set of default text cleaners"""
-# TODO: pick the cleaner for languages dynamically
+# -*- coding: utf-8 -*-
+# Copyright (c) 2017 Keith Ito
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 import re
-from .dhivehi.helpers import clean_numbers, \
-    expand_rufiyaa, remove_dhivehi_suffixes, convert_dv_to_ascii,\
-        expand_ar_graphemes, expand_dv_abbreviations
-from .dhivehi.numbers_to_thaana_transliterator import NumbersToThaanaTransliterator
+from dhivehi.numbers_to_thaana_transliterator import NumbersToThaanaTransliterator
+from unidecode import unidecode
 
-from anyascii import anyascii
+# numbers transliterator
+transliterator = NumbersToThaanaTransliterator()
 
-from TTS.tts.utils.text.chinese_mandarin.numbers import replace_numbers_to_characters_in_text
-
-from .english.abbreviations import abbreviations_en
-from .english.number_norm import normalize_numbers as en_normalize_numbers
-from .english.time_norm import expand_time_english
-from .french.abbreviations import abbreviations_fr
+_rufiyaa_re = re.compile(r"(?<=\d)ރ")
 
 # Regular expression matching whitespace:
 _whitespace_re = re.compile(r"\s+")
 
+_suffixes = {
+    "ދޭށެވެ" : "ދޭން",
+    "ޑެވެ" : "ޑު",
+    "ށެވެ" : "ށް",
+    "ންނެވެ" : "ން",
+    "ނެވެ" : "ން",
+    "ކެވެ" : "އް",
+    "މެވެ" : "ން" ,
+    "ތެވެ" : "ތް",
+    "ހެވެ" : "ސް",
+    "ގެވެ": "ގު",
+    "ންޏެވެ": "ންޏޭ",
+    "ކަ އެވެ": "ކާ",
+    "ނެ އެވެ": "ނޭ",
+    "ވެ އެވެ": "ވޭ",
+    "ދެ އެވެ": "ދޭ",
+    "ގަ އެވެ": "ގައި",
+    "ރެ އެވެ": "ރޭ",
+    "ކެވެ": "އް",
+    "ވި އެވެ": "ވި",
+    "އެވެ" : "",
+     "ގެވެ": "ގެ"   
+}
+  
 
-def expand_abbreviations(text, lang="en"):
-    if lang == "en":
-        _abbreviations = abbreviations_en
-    elif lang == "fr":
-        _abbreviations = abbreviations_fr
+# Arabic formulas and ligatures
+ARABIC_GRAPHEMES = [
+    (re.compile(r"\sﷲ\s"), "އައްލޯހު"),
+    (re.compile(r"\bﷲ"), "އުއްލޯ"),
+    (re.compile("ﷺ"), "ޞައްލައްލޯހު އަލައިހި ވަސައްލަމް"),
+    (re.compile("صلى الله عليه و سلم"), "ޞައްލައްލޯހު އަލައިހި ވަސައްލަމް"),
+    (re.compile("عليه السلام"), "ޢަލައިހިއްސަލާމް")
+]
+
+# Alphabets and their corresponding sounds
+DHIVEHI_ALPHABETS = [
+    (re.compile(r"ޑރ\.\s?"), " ޑޮކްޓަރު"),
+    (re.compile(r"އއ\.\s?"), " އަލިފު އަލިފު"),
+    (re.compile(r"އދ\.\s?"), " އަލިފުދާލު"),
+    (re.compile(r"ކ\.\s?"), " ކާފު"),
+    (re.compile(r"ހއ\.\s?"), " ހާއަލިފު"),
+    (re.compile(r"ހދ\.\s?"), " ހާދާލު"),
+    (re.compile(r"ށ\.\s?"), " ޝަވިޔަނި"),
+    (re.compile(r"ނ\.\s?"), " ނޫނު"),
+    (re.compile(r"ރ\.\s?"), " ރާ"),
+    (re.compile(r"ބ\.\s?"), " ބާ"),
+    (re.compile(r"ޅ\.\s?"), " ޅަވިޔަނި"),
+    (re.compile(r"ފ\.\s?"), " ފާފު"),
+    (re.compile(r"ވ\.\s?"), " ވާވު"),
+    (re.compile(r"މ\.\s?"), " މީމު"),
+    (re.compile(r"ދ\.\s?"), " ދާލު"),
+    (re.compile(r"ތ\.\s?"), " ތާ"),
+    (re.compile(r"ލ\.\s?"), " ލާމު"),
+    (re.compile(r"ގއ\.\s?"), " ގާފުއަލިފު"),
+    (re.compile(r"ގދ\.\s?"), " ގާފުދާލު"),
+    (re.compile(r"ޏ\.\s?"), " ޏަވިޔަނި")
+]
+
+# List of (regular expression, replacement) pairs for abbreviations:
+_abbreviations = [
+    (re.compile("\\b%s\\." % x[0], re.IGNORECASE), x[1])
+    for x in [
+        ("mrs", "misess"),
+        ("mr", "mister"),
+        ("dr", "doctor"),
+        ("st", "saint"),
+        ("co", "company"),
+        ("jr", "junior"),
+        ("maj", "major"),
+        ("gen", "general"),
+        ("drs", "doctors"),
+        ("rev", "reverend"),
+        ("lt", "lieutenant"),
+        ("hon", "honorable"),
+        ("sgt", "sergeant"),
+        ("capt", "captain"),
+        ("esq", "esquire"),
+        ("ltd", "limited"),
+        ("col", "colonel"),
+        ("ft", "fort"),
+    ]
+]
+
+def expand_ar_graphemes(text):
+    for regex, replacement in ARABIC_GRAPHEMES:
+        text = re.sub(regex, replacement, text)
+    return text
+
+
+def expand_dv_abbreviations(text):
+    for regex, replacement in DHIVEHI_ALPHABETS:
+        text = re.sub(regex, replacement, text)
+    return text
+
+
+def expand_abbreviations(text):
     for regex, replacement in _abbreviations:
         text = re.sub(regex, replacement, text)
     return text
@@ -33,51 +135,36 @@ def expand_abbreviations(text, lang="en"):
 def lowercase(text):
     return text.lower()
 
+def _perform_decimal_number_expansion(match_obj):
+    res = ""
+    point = match_obj.string[match_obj.span()[0]] 
+    
+    if point is not None and point == ".":
+        res += " ޕޮއިންޓު "
+    for i in range(match_obj.span()[0] + 1, match_obj.span()[1]):
+        res += match_obj.string[i] + " "
+    return res
+
+def expand_post_decimal_numbers(text):
+    return re.sub(r"\.\d+\b", _perform_decimal_number_expansion, text)
+    
+def clean_long_numbers(text):
+    return re.sub(r"(\d+),(\d+)", r"\1\2", text)
+
+def clean_numbers(text):
+    text = clean_long_numbers(text)
+    text = expand_post_decimal_numbers(text)
+    return text
+
+def expand_rufiyaa(text):
+    return re.sub(_rufiyaa_re, " ރުފިޔާ ", text)
 
 def collapse_whitespace(text):
-    return re.sub(_whitespace_re, " ", text).strip()
+    return re.sub(_whitespace_re, " ", text)
 
 
 def convert_to_ascii(text):
-    return anyascii(text)
-
-
-def remove_aux_symbols(text):
-    text = re.sub(r"[\<\>\(\)\[\]\"]+", "", text)
-    return text
-
-
-def replace_symbols(text, lang="en"):
-    """Replace symbols based on the lenguage tag.
-
-    Args:
-      text:
-       Input text.
-      lang:
-        Lenguage identifier. ex: "en", "fr", "pt", "ca".
-
-    Returns:
-      The modified text
-      example:
-        input args:
-            text: "si l'avi cau, diguem-ho"
-            lang: "ca"
-        Output:
-            text: "si lavi cau, diguemho"
-    """
-    text = text.replace(";", ",")
-    text = text.replace("-", " ") if lang != "ca" else text.replace("-", "")
-    text = text.replace(":", ",")
-    if lang == "en":
-        text = text.replace("&", " and ")
-    elif lang == "fr":
-        text = text.replace("&", " et ")
-    elif lang == "pt":
-        text = text.replace("&", " e ")
-    elif lang == "ca":
-        text = text.replace("&", " i ")
-        text = text.replace("'", "")
-    return text
+    return unidecode(text)
 
 
 def basic_cleaners(text):
@@ -87,97 +174,20 @@ def basic_cleaners(text):
     return text
 
 
-def transliteration_cleaners(text):
-    """Pipeline for non-English text that transliterates to ASCII."""
-    # text = convert_to_ascii(text)
-    text = lowercase(text)
-    text = collapse_whitespace(text)
+def remove_dhivehi_suffixes(text):
+    for key, value in _suffixes.items():
+        text = text.replace(key, value)
     return text
-
-
-def basic_german_cleaners(text):
-    """Pipeline for German text"""
-    text = lowercase(text)
-    text = collapse_whitespace(text)
-    return text
-
-
-# TODO: elaborate it
-def basic_turkish_cleaners(text):
-    """Pipeline for Turkish text"""
-    text = text.replace("I", "ı")
-    text = lowercase(text)
-    text = collapse_whitespace(text)
-    return text
-
-
-def english_cleaners(text):
-    """Pipeline for English text, including number and abbreviation expansion."""
-    # text = convert_to_ascii(text)
-    text = lowercase(text)
-    text = expand_time_english(text)
-    text = en_normalize_numbers(text)
-    text = expand_abbreviations(text)
-    text = replace_symbols(text)
-    text = remove_aux_symbols(text)
-    text = collapse_whitespace(text)
-    return text
-
-
-def phoneme_cleaners(text):
-    """Pipeline for phonemes mode, including number and abbreviation expansion."""
-    text = en_normalize_numbers(text)
-    text = expand_abbreviations(text)
-    text = replace_symbols(text)
-    text = remove_aux_symbols(text)
-    text = collapse_whitespace(text)
-    return text
-
-
-def french_cleaners(text):
-    """Pipeline for French text. There is no need to expand numbers, phonemizer already does that"""
-    text = expand_abbreviations(text, lang="fr")
-    text = lowercase(text)
-    text = replace_symbols(text, lang="fr")
-    text = remove_aux_symbols(text)
-    text = collapse_whitespace(text)
-    return text
-
-
-def portuguese_cleaners(text):
-    """Basic pipeline for Portuguese text. There is no need to expand abbreviation and
-    numbers, phonemizer already does that"""
-    text = lowercase(text)
-    text = replace_symbols(text, lang="pt")
-    text = remove_aux_symbols(text)
-    text = collapse_whitespace(text)
-    return text
-
-
-def chinese_mandarin_cleaners(text: str) -> str:
-    """Basic pipeline for chinese"""
-    text = replace_numbers_to_characters_in_text(text)
-    return text
-
-
-def multilingual_cleaners(text):
-    """Pipeline for multilingual text"""
-    text = lowercase(text)
-    text = replace_symbols(text, lang=None)
-    text = remove_aux_symbols(text)
-    text = collapse_whitespace(text)
-    return text
+    
 
 def dhivehi_cleaners(text):
-    # numbers transliterator
-    transliterator = NumbersToThaanaTransliterator()
     text = expand_rufiyaa(text)
     text = clean_numbers(text)
     text = transliterator.transliterate_text(text)
     text = remove_dhivehi_suffixes(text)
     text = expand_dv_abbreviations(text)
     text = expand_ar_graphemes(text)
-    text = convert_dv_to_ascii(text)
+    text = convert_to_ascii(text)
     text = lowercase(text)
     text = collapse_whitespace(text)
     return text
