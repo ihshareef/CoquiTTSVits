@@ -52,9 +52,7 @@ _suffixes = {
     "ކެވެ": "އް",
     "ވި އެވެ": "ވި",
     "އެވެ" : "",
-     "ގެވެ": "ގެ"   
 }
-  
 
 # Arabic formulas and ligatures
 ARABIC_GRAPHEMES = [
@@ -67,26 +65,37 @@ ARABIC_GRAPHEMES = [
 
 # Alphabets and their corresponding sounds
 DHIVEHI_ALPHABETS = [
-    (re.compile(r"ޑރ\.\s?"), " ޑޮކްޓަރު"),
-    (re.compile(r"އއ\.\s?"), " އަލިފު އަލިފު"),
-    (re.compile(r"އދ\.\s?"), " އަލިފުދާލު"),
-    (re.compile(r"ކ\.\s?"), " ކާފު"),
-    (re.compile(r"ހއ\.\s?"), " ހާއަލިފު"),
-    (re.compile(r"ހދ\.\s?"), " ހާދާލު"),
-    (re.compile(r"ށ\.\s?"), " ޝަވިޔަނި"),
-    (re.compile(r"ނ\.\s?"), " ނޫނު"),
-    (re.compile(r"ރ\.\s?"), " ރާ"),
-    (re.compile(r"ބ\.\s?"), " ބާ"),
-    (re.compile(r"ޅ\.\s?"), " ޅަވިޔަނި"),
-    (re.compile(r"ފ\.\s?"), " ފާފު"),
-    (re.compile(r"ވ\.\s?"), " ވާވު"),
-    (re.compile(r"މ\.\s?"), " މީމު"),
-    (re.compile(r"ދ\.\s?"), " ދާލު"),
-    (re.compile(r"ތ\.\s?"), " ތާ"),
-    (re.compile(r"ލ\.\s?"), " ލާމު"),
-    (re.compile(r"ގއ\.\s?"), " ގާފުއަލިފު"),
-    (re.compile(r"ގދ\.\s?"), " ގާފުދާލު"),
-    (re.compile(r"ޏ\.\s?"), " ޏަވިޔަނި")
+    (re.compile(r"ޑރ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޑޮކްޓަރު"),
+    (re.compile(r"އއ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " އަލިފު އަލިފު"),
+    (re.compile(r"އދ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " އަލިފުދާލު"),
+    (re.compile(r"ކ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ކާފު"),
+    (re.compile(r"ހ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), "ހާ "),
+    (re.compile(r"ހއ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ހާއަލިފު"),
+    (re.compile(r"ހދ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ހާދާލު"),
+    (re.compile(r"ށ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޝަވިޔަނި"),
+    (re.compile(r"ނ(?![ްެޭުޫިީަާޮޯ])[\.\s\)\(]+"), " ނޫނު"),
+    (re.compile(r"ރ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ރާ"),
+    (re.compile(r"ބ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ބާ"),
+    (re.compile(r"ޅ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޅަވިޔަނި"),
+    (re.compile(r"ފ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ފާފު"),
+    (re.compile(r"ވ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ވާވު"),
+    (re.compile(r"މ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " މީމު"),
+    (re.compile(r"ދ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ދާލު"),
+    (re.compile(r"ތ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ތާ"),
+    (re.compile(r"ލ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ލާމު"),
+    (re.compile(r"ގއ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ގާފުއަލިފު"),
+    (re.compile(r"ގދ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ގާފުދާލު"),
+    (re.compile(r"ޏ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޏަވިޔަނި"),
+    (re.compile(r"ގ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ގާފު"),
+    (re.compile(r"ޖ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޖަވިޔަނި"),
+    (re.compile(r"ޑރ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޑޮކްޓަރު"),
+    (re.compile(r"ޑ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޑަވިޔަނި"),
+    (re.compile(r"ޗ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޗަވިޔަނި"),
+    (re.compile(r"ޓ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޓަވިޔަނި"),
+    (re.compile(r"ޕ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޕަވިޔަނި"),
+    (re.compile(r"ޔ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޔާ"),
+    (re.compile(r"ޝ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޝީނު"),
+    (re.compile(r"ޒ(?![ްެޭުޫިީަާޮޯ])[\.\s]?"), " ޒަވިޔަނި"),
 ]
 
 # List of (regular expression, replacement) pairs for abbreviations:
@@ -184,7 +193,8 @@ def dhivehi_cleaners(text):
     text = expand_rufiyaa(text)
     text = clean_numbers(text)
     text = transliterator.transliterate_text(text)
-    text = remove_dhivehi_suffixes(text)
+    # we should not remove dhivehi suffixes
+    # text = remove_dhivehi_suffixes(text)
     text = expand_dv_abbreviations(text)
     text = expand_ar_graphemes(text)
     text = convert_to_ascii(text)
